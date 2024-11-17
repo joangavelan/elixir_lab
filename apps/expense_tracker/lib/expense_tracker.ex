@@ -25,6 +25,10 @@ defmodule ExpenseTracker do
     {:error, :invalid_amount}
   end
 
+  def list_expenses do
+    GenServer.call(__MODULE__, :list_expenses)
+  end
+
   # Server callbacks
   @impl true
   def init(_) do
@@ -42,5 +46,11 @@ defmodule ExpenseTracker do
     }
 
     {:reply, {:ok, new_expense}, [new_expense | expenses]}
+  end
+
+  @impl true
+  def handle_call(:list_expenses, _from, expenses) do
+    expenses_sorted_by_date = Enum.sort_by(expenses, & &1.date, {:desc, Date})
+    {:reply, expenses_sorted_by_date, expenses}
   end
 end
