@@ -29,6 +29,14 @@ defmodule ExpenseTracker do
     GenServer.call(__MODULE__, :list_expenses)
   end
 
+  def delete_expense(id) when is_binary(id) do
+    GenServer.call(__MODULE__, {:delete_expense, id})
+  end
+
+  def delete_expense(_id) do
+    {:error, :invalid_id}
+  end
+
   # Server callbacks
   @impl true
   def init(_) do
@@ -52,5 +60,17 @@ defmodule ExpenseTracker do
   def handle_call(:list_expenses, _from, expenses) do
     expenses_sorted_by_date = Enum.sort_by(expenses, & &1.date, {:desc, Date})
     {:reply, expenses_sorted_by_date, expenses}
+  end
+
+  @impl true
+  def handle_call({:delete_expense, id}, _from, expenses) do
+    case Enum.find(expenses, &(&1.id == id)) do
+      nil ->
+        {:reply, {:error, "Couldn't find expense with id: #{id}"}, expenses}
+
+      expense ->
+        filtered_expenses = Enum.filter(expenses, &(&1.id != id))
+        {:reply, {:ok, expense}, filtered_expenses}
+    end
   end
 end

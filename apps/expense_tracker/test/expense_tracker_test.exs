@@ -60,4 +60,24 @@ defmodule ExpenseTrackerTest do
       assert dates == [~D[2024-11-17], ~D[2024-11-16], ~D[2024-11-15]]
     end
   end
+
+  describe "delete_expense/1" do
+    test "deletes an existing expense and returns the deleted expense" do
+      {:ok, expense} = ExpenseTracker.log_expense(50.00)
+      assert {:ok, deleted_expense} = ExpenseTracker.delete_expense(expense.id)
+      assert deleted_expense == expense
+      assert ExpenseTracker.list_expenses() == []
+    end
+
+    test "returns a descriptive error message when trying to delete a non-existent expense" do
+      invalid_id = "non-existent-id"
+
+      assert {:error, "Couldn't find expense with id: #{invalid_id}"} ==
+               ExpenseTracker.delete_expense(invalid_id)
+    end
+
+    test "returns an error when the provided id is invalid" do
+      assert {:error, :invalid_id} = ExpenseTracker.delete_expense(nil)
+    end
+  end
 end
