@@ -2,6 +2,8 @@ defmodule ExpenseTrackerTest do
   use ExUnit.Case
   doctest ExpenseTracker
 
+  @test_db_file "test/fixtures/expenses.csv"
+
   setup do
     {:ok, _pid} = ExpenseTracker.start_link([])
     :ok
@@ -78,6 +80,85 @@ defmodule ExpenseTrackerTest do
 
     test "returns an error when the provided id is invalid" do
       assert {:error, :invalid_id} = ExpenseTracker.delete_expense(nil)
+    end
+  end
+
+  describe "export_expenses_to_csv/2" do
+    test "writes the correct CSV data to the file" do
+      expenses = [
+        %Expense{
+          id: "1",
+          amount: 50.75,
+          category: "Food",
+          description: "Lunch",
+          date: ~D[2024-11-22]
+        },
+        %Expense{
+          id: "2",
+          amount: 20.00,
+          category: "Transport",
+          description: "Bus fare",
+          date: ~D[2024-11-23]
+        }
+      ]
+
+      ExpenseTracker.export_expenses_to_csv(expenses, @test_db_file)
+
+      file_content = File.read!(@test_db_file)
+
+      expected_content =
+        """
+        id,amount,category,description,date
+        1,50.75,Food,Lunch,2024-11-22
+        2,20.0,Transport,Bus fare,2024-11-23
+        """
+        |> String.trim()
+
+      assert file_content == expected_content
+    end
+  end
+
+  describe "import_expenses_from_csv/1" do
+    test "reads the file and reconstructs the expenses list" do
+      # Create a sample CSV file
+      File.write!(@test_db_file, """
+      id,amount,category,description,date
+      1,50.75,Food,Lunch,2024-11-22
+      2,20.0,Transport,Bus fare,2024-11-23
+      """)
+
+      # Call the function to import the expenses
+      expenses = ExpenseTracker.import_expenses_from_csv(@test_db_file)
+
+      # Expected list of expenses
+      expected_expenses = [
+        %Expense{
+          id: "1",
+          amount: 50.75,
+          category: "Food",
+          description: "Lunch",
+          date: ~D[2024-11-22]
+        },
+        %Expense{
+          id: "2",
+          amount: 20.00,
+          category: "Transport",
+          description: "Bus fare",
+          date: ~D[2024-11-23]
+        }
+      ]
+
+      assert expenses == expected_expenses
+    end
+
+    test "returns an empty list when the CSV file is empty" do
+      # Create an empty CSV file
+      File.write!(@test_db_file, "")
+
+      # Call the function to import the expenses
+      expenses = ExpenseTracker.import_expenses_from_csv(@test_db_file)
+
+      assert expenses == []
     end
   end
 end
