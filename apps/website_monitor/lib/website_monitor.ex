@@ -1,18 +1,5 @@
 defmodule WebsiteMonitor do
-  @moduledoc """
-  Documentation for `WebsiteMonitor`.
-  """
-
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> WebsiteMonitor.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  def parse_yaml_config(path) do
+    YamlElixir.read_from_file!(path)
   end
 end
