@@ -25,7 +25,8 @@ defmodule WebsiteMonitor.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:yaml_elixir, "~> 2.11.0"}
+      {:yaml_elixir, "~> 2.11.0"},
+      {:req, "~> 0.5.0"}
     ]
   end
 end
